@@ -4,17 +4,16 @@
 CC ?= gcc
 LVGL_DIR_NAME ?= lvgl
 LVGL_DIR ?= ${shell pwd}
-CFLAGS += -I$(LVGL_DIR)/
+CFLAGS += -I$(LVGL_DIR)/ -Isrc/
 LDFLAGS += -lm
 BIN = main
 
 
 #Collect the files to compile
-MAINSRC = ./main.c
+MAINSRC = src/main.c src/gui.c src/cover.c src/lv_fs_pc.c src/lv_fs_if.c 
 
 include $(LVGL_DIR)/lvgl/lvgl.mk
 include $(LVGL_DIR)/lv_drivers/lv_drivers.mk
-include $(LVGL_DIR)/lv_examples/lv_examples.mk
 
 OBJEXT ?= .o
 
