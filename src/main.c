@@ -6,6 +6,7 @@ int main(void)
 {
 	lv_init();
 	lv_fs_if_init();
+	lv_png_init();
 
 	fbdev_init();
 	/*A small buffer for LittlevGL to draw the screen's content*/

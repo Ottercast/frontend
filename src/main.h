@@ -7,6 +7,7 @@
 
 #include "lvgl/lvgl.h"
 #include "lv_drivers/display/fbdev.h"
+#include "lv_lib_png/lv_png.h"
 
 #include "lv_fs_if.h"
 #include "gui.h"

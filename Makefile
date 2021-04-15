@@ -14,6 +14,7 @@ MAINSRC = src/main.c src/gui.c src/cover.c src/lv_fs_pc.c src/lv_fs_if.c
 
 include $(LVGL_DIR)/lvgl/lvgl.mk
 include $(LVGL_DIR)/lv_drivers/lv_drivers.mk
+include $(LVGL_DIR)/lv_lib_png/lv_lib_png.mk
 
 OBJEXT ?= .o
 

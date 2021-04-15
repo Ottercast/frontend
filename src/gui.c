@@ -44,10 +44,10 @@ void ottercast_frontend_draw_display()
     lv_bar_set_range(gui_state.bar_trackprogress, 0, 258);
     lv_bar_set_value(gui_state.bar_trackprogress, 198, LV_ANIM_OFF);
 
-    LV_IMG_DECLARE(cover);
 
     gui_state.image_coverart = lv_img_create(screen, NULL);
-    lv_img_set_src(gui_state.image_coverart, &cover);
     lv_obj_set_pos(gui_state.image_coverart, 10, 10);
     lv_obj_set_size(gui_state.image_coverart, 320, 320);
+
+    lv_img_set_src(gui_state.image_coverart, "./coverart.png");
 }
