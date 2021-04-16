@@ -1,6 +1,12 @@
 MIT License
 
+Copyright (c) 2021 Tobias Mädel <t.maedel@alfeld.de>, Ottercast Developers
+
+This software uses LVGL.
 Copyright (c) 2019 Littlev Graphics Library
+
+DBUS/MPRIS implementation is based on https://github.com/mariusor/mpris-ctl
+Copyright (c) Marius Orcsik <marius@habarnam.ro>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
