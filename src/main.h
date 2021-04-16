@@ -11,5 +11,6 @@
 
 #include "lv_fs_if.h"
 #include "gui.h"
+#include "mpris.h"
 
 uint32_t ottercast_frontend_tick_get(void);

@@ -1,46 +1,60 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
+#include "main.h"
 
-#include "sstring.h"
-#include "sdbus.h"
+#define DISP_BUF_SIZE (80 * LV_HOR_RES_MAX)
 
-int main(int argc, char** argv)
+int main(void)
 {
+	lv_init();
+	lv_fs_if_init();
+	lv_png_init();
 
-    // initialise the errors
-    DBusError err = {0};
-    dbus_error_init(&err);
+	fbdev_init();
 
-    // connect to the system bus and check for errors
-    DBusConnection *conn = dbus_bus_get_private(DBUS_BUS_SESSION, &err);
-    if (dbus_error_is_set(&err)) {
-        fprintf(stderr, "DBus connection error(%s)\n", err.message);
-        dbus_error_free(&err);
-    }
-    if (NULL == conn) {
-        printf("Could not init dbus!");
-        return 0;
-    }
+    mpris_init();
+    mpris_poll_all();
 
-    mpris_player players[MAX_PLAYERS] = {0};
-    int found = load_players(conn, players);
-    for (int i = 0; i < found; i++)
-    {
-        mpris_player player = players[i];
-        load_mpris_property(conn, player.namespace, MPRIS_PNAME_METADATA, &player.properties);
-        load_mpris_property(conn, player.namespace, MPRIS_PNAME_POSITION, &player.properties);
-        load_mpris_property(conn, player.namespace, MPRIS_PNAME_PLAYBACKSTATUS, &player.properties);
-    }
+    /*A small buffer for LittlevGL to draw the screen's content*/
+    static lv_color_t buf[DISP_BUF_SIZE];
 
-    if (NULL != conn) {
-        dbus_connection_close(conn);
-        dbus_connection_unref(conn);
-    }
+    /*Initialize a descriptor for the buffer*/
+	static lv_disp_buf_t disp_buf;
+	lv_disp_buf_init(&disp_buf, buf, NULL, DISP_BUF_SIZE);
 
-    return 0;
+	/*Initialize and register a display driver*/
+	lv_disp_drv_t disp_drv;
+	lv_disp_drv_init(&disp_drv);
+	disp_drv.buffer   = &disp_buf;
+	disp_drv.flush_cb = fbdev_flush;
+	lv_disp_drv_register(&disp_drv);
+
+	gui_draw_display();
+
+    lv_task_t *task = lv_task_create(gui_mpris_poll_task, 500, LV_TASK_PRIO_LOW, NULL);
+
+    /*Handle tasks (tickless mode)*/
+	while(1)
+	{
+		lv_task_handler();
+		usleep(5000);
+	}
+
+	return 0;
 }
 
+uint32_t ottercast_frontend_tick_get(void)
+{
+	static uint64_t start_ms = 0;
+	if(start_ms == 0) {
+		struct timeval tv_start;
+		gettimeofday(&tv_start, NULL);
+		start_ms = (tv_start.tv_sec * 1000000 + tv_start.tv_usec) / 1000;
+	}
+
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	uint64_t now_ms;
+	now_ms = (tv_now.tv_sec * 1000000 + tv_now.tv_usec) / 1000;
+
+	uint32_t time_ms = now_ms - start_ms;
+	return time_ms;
+}
