@@ -47,23 +47,30 @@ void gui_draw_display()
     lv_bar_set_range(gui_state.bar_trackprogress, 0, 258);
     lv_bar_set_value(gui_state.bar_trackprogress, 198, LV_ANIM_OFF);
 
+    lv_obj_t *coverborder = lv_img_create(screen, NULL);
+    lv_obj_set_pos(coverborder, 0, 0);
+    lv_obj_set_size(coverborder, 340, 340);
+    lv_img_set_src(coverborder, "./coverborder.png");
 
     gui_state.image_coverart = lv_img_create(screen, NULL);
     lv_obj_set_pos(gui_state.image_coverart, 10, 10);
     lv_obj_set_size(gui_state.image_coverart, 320, 320);
-
-    lv_img_set_src(gui_state.image_coverart, "./coverart.png");
+    lv_img_set_antialias(gui_state.image_coverart, true);
+    lv_img_set_auto_size(gui_state.image_coverart, false);
+    lv_img_set_src(gui_state.image_coverart, "./cover.png");
 }
 
 void gui_mpris_poll_task(lv_task_t *task)
 {
     mpris_poll_all();
 
-    mpris_player *mplay = mpris_get_player_by_namespace("org.mpris.MediaPlayer2.spotify");
+    mpris_player *mplay = mpris_get_player_by_namespace("org.mpris.MediaPlayer2.spotifyd");
 
     if (mplay == NULL)
     {
         printf("player not found!\n");
+        mpris_close();
+        mpris_init();
     }
     else
     {
@@ -96,4 +103,5 @@ void gui_format_seconds_string(int input, char *buffer, size_t buffer_length)
 void gui_fetch_coverart_from_url(const char *url)
 {
     printf("Fetching new coverart: %s\n", url);
+    lv_img_set_src(gui_state.image_coverart, "C/test.bin");
 }

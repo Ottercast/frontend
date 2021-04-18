@@ -5,7 +5,7 @@ CC ?= gcc
 LVGL_DIR_NAME ?= lvgl
 LVGL_DIR ?= ${shell pwd}
 
-DEPS = dbus-1
+DEPS = dbus-1 #ImageMagick libcurl
 DEPFLAGS_CC = `pkg-config --cflags $(DEPS)`
 DEPFLAGS_LD = `pkg-config --libs $(DEPS)`
 
@@ -13,9 +13,9 @@ CFLAGS += -I$(LVGL_DIR)/ -Isrc/
 LDFLAGS += -lm 
 BIN = main
 
-
 #Collect the files to compile
 MAINSRC = src/main.c src/mpris.c src/dbus/dbus_mpris.c src/gui.c src/cover.c src/lv_fs_pc.c src/lv_fs_if.c 
+MAINSRC += lv_lib_split_jpg/lv_sjpg.c lv_lib_split_jpg/tjpgd.c
 
 include $(LVGL_DIR)/lvgl/lvgl.mk
 include $(LVGL_DIR)/lv_drivers/lv_drivers.mk

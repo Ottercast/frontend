@@ -7,8 +7,9 @@ int main(void)
 	lv_init();
 	lv_fs_if_init();
 	lv_png_init();
+    lv_split_jpeg_init();
 
-	fbdev_init();
+    fbdev_init();
 
     mpris_init();
     mpris_poll_all();
