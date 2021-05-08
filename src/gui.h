@@ -1,6 +1,8 @@
 #pragma once
+#include <stdio.h>
 #include "lvgl/lvgl.h"
 #include "mpris.h"
+#include "cover.h"
 
 void gui_draw_display();
 void gui_mpris_poll_task(lv_task_t *task);

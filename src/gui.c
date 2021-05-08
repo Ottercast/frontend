@@ -9,14 +9,44 @@ struct
     lv_obj_t *label_totalposition;
 
     lv_obj_t *image_coverart;
+    lv_obj_t *image_background;
     char coverart_url[1024];
 } gui_state;
 
 char display_time_buffer[64];
 
+uint8_t cover_buffer_1[COVER_IMAGE_SIZE];
+
+const lv_img_dsc_t cover_1 = {
+  .header.always_zero = 0,
+  .header.w = COVER_IMAGE_X,
+  .header.h = COVER_IMAGE_Y,
+  .data_size = COVER_IMAGE_SIZE,
+  .header.cf = LV_IMG_CF_TRUE_COLOR,
+  .data = cover_buffer_1,
+};
+
+uint8_t cover_background_buffer[COVER_BACKGROUND_SIZE];
+
+const lv_img_dsc_t cover_background = {
+    .header.always_zero = 0,
+    .header.w = COVER_BACKGROUND_X,
+    .header.h = COVER_BACKGROUND_Y,
+    .data_size = COVER_BACKGROUND_SIZE,
+    .header.cf = LV_IMG_CF_TRUE_COLOR,
+    .data = cover_background_buffer,
+};
+
 void gui_draw_display()
 {
     lv_obj_t *screen = lv_scr_act();
+
+    gui_state.image_background = lv_img_create(screen, NULL);
+    lv_obj_set_pos(gui_state.image_background, 0, 0);
+    lv_obj_set_size(gui_state.image_background, 800, 340);
+    lv_img_set_antialias(gui_state.image_background, false);
+    lv_img_set_auto_size(gui_state.image_background, false);
+    lv_img_set_src(gui_state.image_background, &cover_background);
 
     gui_state.label_title = lv_label_create(screen, NULL);
     lv_label_set_long_mode(gui_state.label_title, LV_LABEL_LONG_SROLL_CIRC);
@@ -55,7 +85,7 @@ void gui_draw_display()
     gui_state.image_coverart = lv_img_create(screen, NULL);
     lv_obj_set_pos(gui_state.image_coverart, 10, 10);
     lv_obj_set_size(gui_state.image_coverart, 320, 320);
-    lv_img_set_antialias(gui_state.image_coverart, true);
+    lv_img_set_antialias(gui_state.image_coverart, false);
     lv_img_set_auto_size(gui_state.image_coverart, false);
     lv_img_set_src(gui_state.image_coverart, "./cover.png");
 }
@@ -103,5 +133,20 @@ void gui_format_seconds_string(int input, char *buffer, size_t buffer_length)
 void gui_fetch_coverart_from_url(const char *url)
 {
     printf("Fetching new coverart: %s\n", url);
-    lv_img_set_src(gui_state.image_coverart, "C/test.bin");
+
+    uint8_t filename[FILENAME_MAX];
+    tmpnam(filename);
+
+    cover_download(url, filename);
+
+    printf("Finished download\n");
+    cover_decode(filename, cover_buffer_1, COVER_IMAGE_X, COVER_IMAGE_Y);
+    printf("Finished cover decode\n");
+    cover_blur_background(filename, cover_background_buffer, COVER_BACKGROUND_X, COVER_BACKGROUND_Y);
+
+    printf("Finished blur background\n");
+    lv_img_set_src(gui_state.image_coverart, &cover_1);
+    lv_img_set_src(gui_state.image_background, &cover_background);
+
+    printf("Finished set_src\n");
 }

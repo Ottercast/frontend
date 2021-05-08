@@ -5,16 +5,16 @@ CC ?= gcc
 LVGL_DIR_NAME ?= lvgl
 LVGL_DIR ?= ${shell pwd}
 
-DEPS = dbus-1 #ImageMagick libcurl
+DEPS = dbus-1 ImageMagick libcurl MagickWand
 DEPFLAGS_CC = `pkg-config --cflags $(DEPS)`
-DEPFLAGS_LD = `pkg-config --libs $(DEPS)`
+DEPFLAGS_LD = `pkg-config --libs $(DEPS)` -lpthread
 
-CFLAGS += -I$(LVGL_DIR)/ -Isrc/
-LDFLAGS += -lm 
+CFLAGS += -I$(LVGL_DIR)/ -Isrc/ -O3 -march=armv7-a+simd+neon-vfpv4 -flto
+LDFLAGS += -lm -flto
 BIN = main
 
 #Collect the files to compile
-MAINSRC = src/main.c src/mpris.c src/dbus/dbus_mpris.c src/gui.c src/cover.c src/lv_fs_pc.c src/lv_fs_if.c 
+MAINSRC = src/main.c src/mpris.c src/dbus/dbus_mpris.c src/gui.c src/lv_fs_pc.c src/lv_fs_if.c src/cover.c
 MAINSRC += lv_lib_split_jpg/lv_sjpg.c lv_lib_split_jpg/tjpgd.c
 
 include $(LVGL_DIR)/lvgl/lvgl.mk
