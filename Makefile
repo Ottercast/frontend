@@ -9,8 +9,8 @@ DEPS = dbus-1 ImageMagick libcurl MagickWand
 DEPFLAGS_CC = `pkg-config --cflags $(DEPS)`
 DEPFLAGS_LD = `pkg-config --libs $(DEPS)` -lpthread
 
-CFLAGS += -I$(LVGL_DIR)/ -Isrc/ -O3 -march=armv7-a+simd+neon-vfpv4 -flto
-LDFLAGS += -lm -flto
+CFLAGS += -I$(LVGL_DIR)/ -Isrc/ -O3 -march=armv7-a+simd+neon-vfpv4
+LDFLAGS += -lm
 BIN = main
 
 #Collect the files to compile

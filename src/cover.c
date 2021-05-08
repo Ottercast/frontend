@@ -26,7 +26,7 @@ void cover_decode(uint8_t *filename, uint8_t *buf_cover, uint16_t width, uint16_
     MagickResetIterator(magick_wand);
     while (MagickNextImage(magick_wand) != MagickFalse)
     {
-        MagickResizeImage(magick_wand, width, height, SincFastFilter);
+        MagickResizeImage(magick_wand, width, height, TriangleFilter);
     }
 
     status = MagickExportImagePixels(magick_wand, 0, 0, width, height, "BGRP", CharPixel, buf_cover);
@@ -52,9 +52,8 @@ void cover_blur_background(uint8_t *filename, uint8_t *buf_background, uint16_t 
     MagickResetIterator(magick_wand);
     while (MagickNextImage(magick_wand) != MagickFalse)
     {
-        //MagickResizeImage(magick_wand, 7, 7, SincFastFilter);
-       // MagickResizeImage(magick_wand, width, width, SincFastFilter);
-        MagickBlurImage(magick_wand, 0, 100);
+        MagickResizeImage(magick_wand, 7, 7, TriangleFilter);
+        MagickResizeImage(magick_wand, width, width, TriangleFilter);
         MagickCropImage(magick_wand, width, height, 0, (width / 2) - (height / 2));
     }
 

@@ -10,6 +10,7 @@ struct
 
     lv_obj_t *image_coverart;
     lv_obj_t *image_background;
+    lv_style_t style_title;
     char coverart_url[1024];
 } gui_state;
 
@@ -41,6 +42,9 @@ void gui_draw_display()
 {
     lv_obj_t *screen = lv_scr_act();
 
+    lv_style_init(&gui_state.style_title);
+    lv_style_set_text_font(&gui_state.style_title, 0, &lv_font_montserrat_40);
+
     gui_state.image_background = lv_img_create(screen, NULL);
     lv_obj_set_pos(gui_state.image_background, 0, 0);
     lv_obj_set_size(gui_state.image_background, 800, 340);
@@ -50,29 +54,30 @@ void gui_draw_display()
 
     gui_state.label_title = lv_label_create(screen, NULL);
     lv_label_set_long_mode(gui_state.label_title, LV_LABEL_LONG_SROLL_CIRC);
-    lv_obj_set_pos(gui_state.label_title, 350, 40);
-    lv_obj_set_size(gui_state.label_title, 430, 40);
+    lv_obj_set_pos(gui_state.label_title, 350, 60);
+    lv_obj_set_size(gui_state.label_title, 430, 50);
+    lv_obj_add_style(gui_state.label_title, LV_OBJ_PART_MAIN, &gui_state.style_title);
     lv_label_set_text(gui_state.label_title, "");
 
     gui_state.label_artist = lv_label_create(screen, NULL);
-    lv_label_set_long_mode(gui_state.label_artist, LV_LABEL_LONG_SROLL_CIRC);
-    lv_obj_set_pos(gui_state.label_artist, 350, 80);
+    lv_label_set_long_mode(gui_state.label_artist, LV_LABEL_LONG_DOT);
+    lv_obj_set_pos(gui_state.label_artist, 350, 110);
     lv_obj_set_size(gui_state.label_artist, 430, 30);
     lv_label_set_text(gui_state.label_artist, "");
 
     // Song progress indicator (2 labels, 1 bar)
     gui_state.label_currentposition = lv_label_create(screen, NULL);
-    lv_obj_set_pos(gui_state.label_currentposition, 350, 140);
+    lv_obj_set_pos(gui_state.label_currentposition, 350, 300);
     lv_obj_set_size(gui_state.label_currentposition, 75, 30);
     lv_label_set_text(gui_state.label_currentposition, "-:--");
 
     gui_state.label_totalposition = lv_label_create(screen, NULL);
-    lv_obj_set_pos(gui_state.label_totalposition, 720, 140);
+    lv_obj_set_pos(gui_state.label_totalposition, 720, 300);
     lv_obj_set_size(gui_state.label_totalposition, 75, 30);
     lv_label_set_text(gui_state.label_totalposition, "-:--");
 
     gui_state.bar_trackprogress = lv_bar_create(screen, NULL);
-    lv_obj_set_pos(gui_state.bar_trackprogress, 350, 115);
+    lv_obj_set_pos(gui_state.bar_trackprogress, 350, 275);
     lv_obj_set_size(gui_state.bar_trackprogress, 430, 20);
     lv_bar_set_range(gui_state.bar_trackprogress, 0, 258);
     lv_bar_set_value(gui_state.bar_trackprogress, 198, LV_ANIM_OFF);
@@ -139,14 +144,9 @@ void gui_fetch_coverart_from_url(const char *url)
 
     cover_download(url, filename);
 
-    printf("Finished download\n");
     cover_decode(filename, cover_buffer_1, COVER_IMAGE_X, COVER_IMAGE_Y);
-    printf("Finished cover decode\n");
     cover_blur_background(filename, cover_background_buffer, COVER_BACKGROUND_X, COVER_BACKGROUND_Y);
 
-    printf("Finished blur background\n");
     lv_img_set_src(gui_state.image_coverart, &cover_1);
     lv_img_set_src(gui_state.image_background, &cover_background);
-
-    printf("Finished set_src\n");
 }
