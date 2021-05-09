@@ -46,3 +46,7 @@ clean:
 	rm -f $(BIN) $(AOBJS) $(COBJS) $(MAINOBJ)
 	rm -f *.o
 
+install: ottercast-frontend
+	install -d $(DESTDIR)/opt/ottercast-frontend
+	install -m 755 ottercast-frontend $(DESTDIR)/opt/ottercast-frontend/
+	install -m 755 assets/cover.png $(DESTDIR)/opt/ottercast-frontend/
