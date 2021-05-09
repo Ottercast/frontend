@@ -11,7 +11,7 @@ DEPFLAGS_LD = `pkg-config --libs $(DEPS)` -lpthread
 
 CFLAGS += -I$(LVGL_DIR)/ -Isrc/ -O3 -march=armv7-a+simd+neon-vfpv4
 LDFLAGS += -lm
-BIN = main
+BIN = ottercast-frontend
 
 #Collect the files to compile
 MAINSRC = src/main.c src/mpris.c src/dbus/dbus_mpris.c src/gui.c src/lv_fs_pc.c src/lv_fs_if.c src/cover.c

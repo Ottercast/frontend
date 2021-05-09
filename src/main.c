@@ -2,8 +2,12 @@
 
 #define DISP_BUF_SIZE (80 * LV_HOR_RES_MAX)
 
+static pthread_t thread_mpris_poll; 
+
+
 int main(void)
 {
+	int err = 0;
 	lv_init();
 	lv_fs_if_init();
 	lv_png_init();
@@ -30,9 +34,14 @@ int main(void)
 
 	gui_draw_display();
 
-    lv_task_t *task = lv_task_create(gui_mpris_poll_task, 500, LV_TASK_PRIO_LOW, NULL);
+	err = pthread_create(&thread_mpris_poll, NULL, gui_mpris_poll_task, NULL);
+	if (err)
+	{
+		fprintf(stderr, "pthread create failed, err: %d\n", err);
+		exit(1);
+	}
 
-    /*Handle tasks (tickless mode)*/
+	/*Handle tasks (tickless mode)*/
 	while(1)
 	{
 		lv_task_handler();

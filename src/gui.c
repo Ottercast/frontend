@@ -3,6 +3,8 @@
 struct
 {
     lv_obj_t *label_title;
+    lv_obj_t *label_title_shadow;
+
     lv_obj_t *label_artist;
     lv_obj_t *bar_trackprogress;
     lv_obj_t *label_currentposition;
@@ -59,6 +61,13 @@ void gui_draw_display()
     lv_obj_add_style(gui_state.label_title, LV_OBJ_PART_MAIN, &gui_state.style_title);
     lv_label_set_text(gui_state.label_title, "");
 
+    gui_state.label_title_shadow = lv_label_create(screen, NULL);
+    lv_label_set_long_mode(gui_state.label_title_shadow, LV_LABEL_LONG_SROLL_CIRC);
+    lv_obj_set_pos(gui_state.label_title_shadow, 352, 62);
+    lv_obj_set_size(gui_state.label_title_shadow, 430, 50);
+    lv_obj_add_style(gui_state.label_title_shadow, LV_OBJ_PART_MAIN, &gui_state.style_title);
+    lv_label_set_text(gui_state.label_title_shadow, "");
+
     gui_state.label_artist = lv_label_create(screen, NULL);
     lv_label_set_long_mode(gui_state.label_artist, LV_LABEL_LONG_DOT);
     lv_obj_set_pos(gui_state.label_artist, 350, 110);
@@ -95,38 +104,43 @@ void gui_draw_display()
     lv_img_set_src(gui_state.image_coverart, "./cover.png");
 }
 
-void gui_mpris_poll_task(lv_task_t *task)
+void gui_mpris_poll_task()
 {
-    mpris_poll_all();
-
-    mpris_player *mplay = mpris_get_player_by_namespace("org.mpris.MediaPlayer2.spotifyd");
-
-    if (mplay == NULL)
+    while (1)
     {
-        printf("player not found!\n");
-        mpris_close();
-        mpris_init();
-    }
-    else
-    {
-        lv_label_set_text(gui_state.label_title, mplay->properties.metadata.title);
-        lv_label_set_text(gui_state.label_artist, mplay->properties.metadata.album_artist);
+        mpris_poll_all();
 
-        gui_format_seconds_string(mplay->properties.position, display_time_buffer, sizeof(display_time_buffer));
-        lv_label_set_text(gui_state.label_currentposition, display_time_buffer);
+        mpris_player *mplay = mpris_get_player_by_namespace("org.mpris.MediaPlayer2.spotifyd");
 
-        gui_format_seconds_string(mplay->properties.metadata.length, display_time_buffer, sizeof(display_time_buffer));
-        lv_label_set_text(gui_state.label_totalposition, display_time_buffer);
-
-        lv_bar_set_range(gui_state.bar_trackprogress, 0, mplay->properties.metadata.length / 1000000);
-        lv_bar_set_value(gui_state.bar_trackprogress, mplay->properties.position / 1000000, LV_ANIM_ON);
-
-        if (!!strncmp(gui_state.coverart_url, mplay->properties.metadata.art_url, strlen(mplay->properties.metadata.art_url)))
+        if (mplay == NULL)
         {
-            strncpy(gui_state.coverart_url, mplay->properties.metadata.art_url, 1024);
-            gui_fetch_coverart_from_url(gui_state.coverart_url);
+            printf("player not found!\n");
+            mpris_close();
+            mpris_init();
         }
+        else
+        {
+            lv_label_set_text(gui_state.label_title, mplay->properties.metadata.title);
+            lv_label_set_text(gui_state.label_artist, mplay->properties.metadata.album_artist);
+
+            gui_format_seconds_string(mplay->properties.position, display_time_buffer, sizeof(display_time_buffer));
+            lv_label_set_text(gui_state.label_currentposition, display_time_buffer);
+
+            gui_format_seconds_string(mplay->properties.metadata.length, display_time_buffer, sizeof(display_time_buffer));
+            lv_label_set_text(gui_state.label_totalposition, display_time_buffer);
+
+            lv_bar_set_range(gui_state.bar_trackprogress, 0, mplay->properties.metadata.length / 1000000);
+            lv_bar_set_value(gui_state.bar_trackprogress, mplay->properties.position / 1000000, LV_ANIM_ON);
+
+            if (!!strncmp(gui_state.coverart_url, mplay->properties.metadata.art_url, strlen(mplay->properties.metadata.art_url)))
+            {
+                strncpy(gui_state.coverart_url, mplay->properties.metadata.art_url, 1024);
+                gui_fetch_coverart_from_url(gui_state.coverart_url);
+            }
+        }
+        usleep(500000);
     }
+   
 }
 
 void gui_format_seconds_string(int input, char *buffer, size_t buffer_length)
@@ -146,6 +160,8 @@ void gui_fetch_coverart_from_url(const char *url)
 
     cover_decode(filename, cover_buffer_1, COVER_IMAGE_X, COVER_IMAGE_Y);
     cover_blur_background(filename, cover_background_buffer, COVER_BACKGROUND_X, COVER_BACKGROUND_Y);
+    
+    unlink(filename);
 
     lv_img_set_src(gui_state.image_coverart, &cover_1);
     lv_img_set_src(gui_state.image_background, &cover_background);

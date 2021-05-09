@@ -52,9 +52,9 @@ void cover_blur_background(uint8_t *filename, uint8_t *buf_background, uint16_t 
     MagickResetIterator(magick_wand);
     while (MagickNextImage(magick_wand) != MagickFalse)
     {
-        MagickResizeImage(magick_wand, 7, 7, TriangleFilter);
-        MagickResizeImage(magick_wand, width, width, TriangleFilter);
-        MagickCropImage(magick_wand, width, height, 0, (width / 2) - (height / 2));
+        MagickCropImage(magick_wand, 640, 640, 0, 150);
+        MagickResizeImage(magick_wand, 10, 4, TriangleFilter);
+        MagickResizeImage(magick_wand, width, height, TriangleFilter);
     }
 
     status = MagickExportImagePixels(magick_wand, 0, 0, width, height, "BGRP", CharPixel, buf_background);
@@ -81,6 +81,10 @@ void cover_download(const char *url, const char *filename)
         res = curl_easy_perform(curl);
         curl_easy_cleanup(curl);
         fclose(fp);
+    }
+    else
+    {
+        fprintf(stderr, "curl failed: %d\n", curl);
     }
 }
 
