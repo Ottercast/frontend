@@ -1,5 +1,7 @@
 #include "gui.h"
 
+extern pthread_mutex_t lock;
+
 struct
 {
     lv_obj_t *label_title;
@@ -120,6 +122,7 @@ void gui_mpris_poll_task()
         }
         else
         {
+            pthread_mutex_lock(&lock);
             lv_label_set_text(gui_state.label_title, mplay->properties.metadata.title);
             lv_label_set_text(gui_state.label_artist, mplay->properties.metadata.album_artist);
 
@@ -131,6 +134,7 @@ void gui_mpris_poll_task()
 
             lv_bar_set_range(gui_state.bar_trackprogress, 0, mplay->properties.metadata.length / 1000000);
             lv_bar_set_value(gui_state.bar_trackprogress, mplay->properties.position / 1000000, LV_ANIM_ON);
+            pthread_mutex_unlock(&lock);
 
             if (!!strncmp(gui_state.coverart_url, mplay->properties.metadata.art_url, strlen(mplay->properties.metadata.art_url)))
             {

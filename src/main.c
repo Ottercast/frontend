@@ -3,7 +3,7 @@
 #define DISP_BUF_SIZE (80 * LV_HOR_RES_MAX)
 
 static pthread_t thread_mpris_poll; 
-
+pthread_mutex_t lock;
 
 int main(void)
 {
@@ -34,6 +34,8 @@ int main(void)
 
 	gui_draw_display();
 
+	pthread_mutex_init(&lock, NULL);
+
 	err = pthread_create(&thread_mpris_poll, NULL, gui_mpris_poll_task, NULL);
 	if (err)
 	{
@@ -44,7 +46,9 @@ int main(void)
 	/*Handle tasks (tickless mode)*/
 	while(1)
 	{
+		pthread_mutex_lock(&lock);
 		lv_task_handler();
+		pthread_mutex_unlock(&lock);
 		usleep(5000);
 	}
 

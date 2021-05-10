@@ -1,5 +1,6 @@
 #pragma once
 #include <stdio.h>
+#include <pthread.h>
 #include "lvgl/lvgl.h"
 #include "mpris.h"
 #include "cover.h"
