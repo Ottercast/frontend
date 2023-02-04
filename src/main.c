@@ -9,9 +9,6 @@ int main(void)
 {
 	int err = 0;
 	lv_init();
-	lv_fs_if_init();
-	lv_png_init();
-    lv_split_jpeg_init();
 
     fbdev_init();
 
@@ -22,14 +19,19 @@ int main(void)
     static lv_color_t buf[DISP_BUF_SIZE];
 
     /*Initialize a descriptor for the buffer*/
-	static lv_disp_buf_t disp_buf;
-	lv_disp_buf_init(&disp_buf, buf, NULL, DISP_BUF_SIZE);
+	static lv_disp_draw_buf_t disp_buf;
+	lv_disp_draw_buf_init(&disp_buf, buf, NULL, DISP_BUF_SIZE);
 
 	/*Initialize and register a display driver*/
 	lv_disp_drv_t disp_drv;
 	lv_disp_drv_init(&disp_drv);
-	disp_drv.buffer   = &disp_buf;
+	disp_drv.draw_buf   = &disp_buf;
 	disp_drv.flush_cb = fbdev_flush;
+	disp_drv.hor_res = 340;
+	disp_drv.ver_res = 800;
+	disp_drv.sw_rotate = 1;
+	disp_drv.rotated = LV_DISP_ROT_90;
+
 	lv_disp_drv_register(&disp_drv);
 
 	gui_draw_display();

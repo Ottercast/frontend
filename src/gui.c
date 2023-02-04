@@ -15,6 +15,10 @@ struct
     lv_obj_t *image_coverart;
     lv_obj_t *image_background;
     lv_style_t style_title;
+    lv_style_t style_title_shadow;
+    lv_style_t style_artist;
+    lv_style_t style_info;
+
     char coverart_url[1024];
 } gui_state;
 
@@ -47,62 +51,79 @@ void gui_draw_display()
     lv_obj_t *screen = lv_scr_act();
 
     lv_style_init(&gui_state.style_title);
-    lv_style_set_text_font(&gui_state.style_title, 0, &lv_font_montserrat_40);
+    lv_style_set_text_font(&gui_state.style_title, &lv_font_montserrat_40);
+    lv_style_set_text_color(&gui_state.style_title, lv_color_white());
 
-    gui_state.image_background = lv_img_create(screen, NULL);
+    lv_style_init(&gui_state.style_title_shadow);
+    lv_style_set_text_font(&gui_state.style_title_shadow, &lv_font_montserrat_40);
+    lv_style_set_text_color(&gui_state.style_title_shadow, lv_palette_main(LV_PALETTE_GREY));
+
+    lv_style_init(&gui_state.style_artist);
+    lv_style_set_text_font(&gui_state.style_artist, &lv_font_montserrat_28);
+    lv_style_set_text_color(&gui_state.style_artist, lv_color_white());
+
+    lv_style_init(&gui_state.style_info);
+    lv_style_set_text_font(&gui_state.style_info, &lv_font_montserrat_16);
+    lv_style_set_text_color(&gui_state.style_info, lv_color_white());
+
+
+    gui_state.image_background = lv_img_create(screen);
     lv_obj_set_pos(gui_state.image_background, 0, 0);
     lv_obj_set_size(gui_state.image_background, 800, 340);
     lv_img_set_antialias(gui_state.image_background, false);
-    lv_img_set_auto_size(gui_state.image_background, false);
+    //lv_img_set_auto_size(gui_state.image_background, false);
     lv_img_set_src(gui_state.image_background, &cover_background);
 
-    gui_state.label_title = lv_label_create(screen, NULL);
-    lv_label_set_long_mode(gui_state.label_title, LV_LABEL_LONG_SROLL_CIRC);
-    lv_obj_set_pos(gui_state.label_title, 350, 60);
-    lv_obj_set_size(gui_state.label_title, 430, 50);
-    lv_obj_add_style(gui_state.label_title, LV_OBJ_PART_MAIN, &gui_state.style_title);
-    lv_label_set_text(gui_state.label_title, "");
-
-    gui_state.label_title_shadow = lv_label_create(screen, NULL);
-    lv_label_set_long_mode(gui_state.label_title_shadow, LV_LABEL_LONG_SROLL_CIRC);
+    gui_state.label_title_shadow = lv_label_create(screen);
+    lv_label_set_long_mode(gui_state.label_title_shadow, LV_LABEL_LONG_SCROLL_CIRCULAR);
     lv_obj_set_pos(gui_state.label_title_shadow, 352, 62);
     lv_obj_set_size(gui_state.label_title_shadow, 430, 50);
-    lv_obj_add_style(gui_state.label_title_shadow, LV_OBJ_PART_MAIN, &gui_state.style_title);
+    lv_obj_add_style(gui_state.label_title_shadow, &gui_state.style_title_shadow, 0);
     lv_label_set_text(gui_state.label_title_shadow, "");
 
-    gui_state.label_artist = lv_label_create(screen, NULL);
+    gui_state.label_title = lv_label_create(screen);
+    lv_label_set_long_mode(gui_state.label_title, LV_LABEL_LONG_SCROLL_CIRCULAR);
+    lv_obj_set_pos(gui_state.label_title, 350, 60);
+    lv_obj_set_size(gui_state.label_title, 430, 50);
+    lv_obj_add_style(gui_state.label_title, &gui_state.style_title, 0);
+    lv_label_set_text(gui_state.label_title, "");
+
+    gui_state.label_artist = lv_label_create(screen);
     lv_label_set_long_mode(gui_state.label_artist, LV_LABEL_LONG_DOT);
     lv_obj_set_pos(gui_state.label_artist, 350, 110);
     lv_obj_set_size(gui_state.label_artist, 430, 30);
+    lv_obj_add_style(gui_state.label_artist, &gui_state.style_artist, 0);
     lv_label_set_text(gui_state.label_artist, "");
 
     // Song progress indicator (2 labels, 1 bar)
-    gui_state.label_currentposition = lv_label_create(screen, NULL);
+    gui_state.label_currentposition = lv_label_create(screen);
     lv_obj_set_pos(gui_state.label_currentposition, 350, 300);
     lv_obj_set_size(gui_state.label_currentposition, 75, 30);
+    lv_obj_add_style(gui_state.label_currentposition, &gui_state.style_info, 0);
     lv_label_set_text(gui_state.label_currentposition, "-:--");
 
-    gui_state.label_totalposition = lv_label_create(screen, NULL);
-    lv_obj_set_pos(gui_state.label_totalposition, 720, 300);
+    gui_state.label_totalposition = lv_label_create(screen);
+    lv_obj_set_pos(gui_state.label_totalposition, 740, 300);
     lv_obj_set_size(gui_state.label_totalposition, 75, 30);
+    lv_obj_add_style(gui_state.label_totalposition, &gui_state.style_info, 0);
     lv_label_set_text(gui_state.label_totalposition, "-:--");
 
-    gui_state.bar_trackprogress = lv_bar_create(screen, NULL);
+    gui_state.bar_trackprogress = lv_bar_create(screen);
     lv_obj_set_pos(gui_state.bar_trackprogress, 350, 275);
     lv_obj_set_size(gui_state.bar_trackprogress, 430, 20);
     lv_bar_set_range(gui_state.bar_trackprogress, 0, 258);
     lv_bar_set_value(gui_state.bar_trackprogress, 198, LV_ANIM_OFF);
 
-    lv_obj_t *coverborder = lv_img_create(screen, NULL);
+    lv_obj_t *coverborder = lv_img_create(screen);
     lv_obj_set_pos(coverborder, 0, 0);
     lv_obj_set_size(coverborder, 340, 340);
     lv_img_set_src(coverborder, "./coverborder.png");
 
-    gui_state.image_coverart = lv_img_create(screen, NULL);
+    gui_state.image_coverart = lv_img_create(screen);
     lv_obj_set_pos(gui_state.image_coverart, 10, 10);
     lv_obj_set_size(gui_state.image_coverart, 320, 320);
     lv_img_set_antialias(gui_state.image_coverart, false);
-    lv_img_set_auto_size(gui_state.image_coverart, false);
+    //lv_img_set_auto_size(gui_state.image_coverart, false);
     lv_img_set_src(gui_state.image_coverart, "./cover.png");
 }
 
@@ -123,6 +144,7 @@ void gui_mpris_poll_task()
         else
         {
             pthread_mutex_lock(&lock);
+            lv_label_set_text(gui_state.label_title_shadow, mplay->properties.metadata.title);
             lv_label_set_text(gui_state.label_title, mplay->properties.metadata.title);
             lv_label_set_text(gui_state.label_artist, mplay->properties.metadata.album_artist);
 

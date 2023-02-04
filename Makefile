@@ -14,12 +14,10 @@ LDFLAGS += -lm
 BIN = ottercast-frontend
 
 #Collect the files to compile
-MAINSRC = src/main.c src/mpris.c src/dbus/dbus_mpris.c src/gui.c src/lv_fs_pc.c src/lv_fs_if.c src/cover.c
-MAINSRC += lv_lib_split_jpg/lv_sjpg.c lv_lib_split_jpg/tjpgd.c
+MAINSRC = src/main.c src/mpris.c src/dbus/dbus_mpris.c src/gui.c src/cover.c
 
 include $(LVGL_DIR)/lvgl/lvgl.mk
 include $(LVGL_DIR)/lv_drivers/lv_drivers.mk
-include $(LVGL_DIR)/lv_lib_png/lv_lib_png.mk
 
 OBJEXT ?= .o
 
