@@ -19,6 +19,8 @@ struct
     lv_style_t style_artist;
     lv_style_t style_info;
 
+    lv_style_t style_cover;
+
     char coverart_url[1024];
 } gui_state;
 
@@ -114,17 +116,19 @@ void gui_draw_display()
     lv_bar_set_range(gui_state.bar_trackprogress, 0, 258);
     lv_bar_set_value(gui_state.bar_trackprogress, 198, LV_ANIM_OFF);
 
-    lv_obj_t *coverborder = lv_img_create(screen);
-    lv_obj_set_pos(coverborder, 0, 0);
-    lv_obj_set_size(coverborder, 340, 340);
-    lv_img_set_src(coverborder, "./coverborder.png");
+    lv_style_init(&gui_state.style_cover);
+    lv_style_set_radius(&gui_state.style_cover, 5);
+    lv_style_set_shadow_width(&gui_state.style_cover, 55);
+    lv_style_set_shadow_color(&gui_state.style_cover, lv_palette_main(LV_PALETTE_GREY));
 
     gui_state.image_coverart = lv_img_create(screen);
     lv_obj_set_pos(gui_state.image_coverart, 10, 10);
     lv_obj_set_size(gui_state.image_coverart, 320, 320);
+    lv_obj_add_style(gui_state.image_coverart, &gui_state.style_cover, 0);
+
     lv_img_set_antialias(gui_state.image_coverart, false);
     //lv_img_set_auto_size(gui_state.image_coverart, false);
-    lv_img_set_src(gui_state.image_coverart, "./cover.png");
+    lv_img_set_src(gui_state.image_coverart, "C:cover.png");
 }
 
 void gui_mpris_poll_task()

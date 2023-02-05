@@ -9,16 +9,16 @@ int main(void)
 {
 	int err = 0;
 	lv_init();
+	lv_png_init();
+	fbdev_init();
 
-    fbdev_init();
+	mpris_init();
+	mpris_poll_all();
 
-    mpris_init();
-    mpris_poll_all();
+	/*A small buffer for LittlevGL to draw the screen's content*/
+	static lv_color_t buf[DISP_BUF_SIZE];
 
-    /*A small buffer for LittlevGL to draw the screen's content*/
-    static lv_color_t buf[DISP_BUF_SIZE];
-
-    /*Initialize a descriptor for the buffer*/
+	/*Initialize a descriptor for the buffer*/
 	static lv_disp_draw_buf_t disp_buf;
 	lv_disp_draw_buf_init(&disp_buf, buf, NULL, DISP_BUF_SIZE);
 

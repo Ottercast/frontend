@@ -9,7 +9,7 @@ DEPS = dbus-1 ImageMagick libcurl MagickWand
 DEPFLAGS_CC = `pkg-config --cflags $(DEPS)`
 DEPFLAGS_LD = `pkg-config --libs $(DEPS)` -lpthread
 
-CFLAGS += -I$(LVGL_DIR)/ -Isrc/ -O3 -march=armv7-a+simd+neon-vfpv4
+CFLAGS += -I$(LVGL_DIR)/ -Isrc/ -O3 -march=armv7-a+simd+neon
 LDFLAGS += -lm
 BIN = ottercast-frontend
 
