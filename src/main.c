@@ -57,20 +57,18 @@ int main(void)
 	return 0;
 }
 
+static uint64_t start_ms = 0;
 uint32_t ottercast_frontend_tick_get(void)
 {
-	static uint64_t start_ms = 0;
+	struct timespec now;
+	uint64_t now_ms;
+
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	now_ms = now.tv_sec * 1000 + now.tv_nsec / 1000000;
+
 	if(start_ms == 0) {
-		struct timeval tv_start;
-		gettimeofday(&tv_start, NULL);
-		start_ms = (tv_start.tv_sec * 1000000 + tv_start.tv_usec) / 1000;
+		start_ms = now_ms;
 	}
 
-	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
-	uint64_t now_ms;
-	now_ms = (tv_now.tv_sec * 1000000 + tv_now.tv_usec) / 1000;
-
-	uint32_t time_ms = now_ms - start_ms;
-	return time_ms;
+	return now_ms - start_ms;
 }
