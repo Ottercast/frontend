@@ -158,7 +158,13 @@ void gui_mpris_poll_task()
             gui_format_seconds_string(mplay->properties.metadata.length, display_time_buffer, sizeof(display_time_buffer));
             lv_label_set_text(gui_state.label_totalposition, display_time_buffer);
 
-            lv_bar_set_range(gui_state.bar_trackprogress, 0, mplay->properties.metadata.length / 1000000);
+            int16_t max_value_sanitized = mplay->properties.metadata.length / 1000000;
+            if (max_value_sanitized == 0) {
+                /* min_value == max_value crashes LVGL */
+                max_value_sanitized = 1;
+            }
+
+            lv_bar_set_range(gui_state.bar_trackprogress, 0, max_value_sanitized);
             lv_bar_set_value(gui_state.bar_trackprogress, mplay->properties.position / 1000000, LV_ANIM_ON);
             pthread_mutex_unlock(&lock);
 
