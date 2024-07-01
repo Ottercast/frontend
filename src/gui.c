@@ -1,5 +1,12 @@
 #include "gui.h"
 
+#include <linux/fb.h>
+#include <fcntl.h>
+#include <stdbool.h>
+#include <sys/ioctl.h>
+#include <time.h>
+#include <unistd.h>
+
 extern pthread_mutex_t lock;
 
 struct
@@ -131,8 +138,21 @@ void gui_draw_display()
     lv_img_set_src(gui_state.image_coverart, "C:cover.png");
 }
 
-void gui_mpris_poll_task()
+static int64_t timedelta_seconds(const struct timespec *a, const struct timespec *b) {
+	int64_t delta_secs = a->tv_sec - b->tv_sec;
+	int64_t delta_nsecs = a->tv_nsec - b->tv_nsec;
+	delta_secs += (delta_nsecs + 500000000LL) / 1000000000LL;
+	return delta_secs;
+}
+
+void gui_mpris_poll_task(void *arg)
 {
+    int fbfd = (int)arg;
+    uint64_t last_playback_position = 0;
+    struct timespec last_playback_pos_change;
+    bool blanked = true;
+
+    clock_gettime(CLOCK_MONOTONIC, &last_playback_pos_change);
     while (1)
     {
         mpris_poll_all();
@@ -173,10 +193,26 @@ void gui_mpris_poll_task()
                 strncpy(gui_state.coverart_url, mplay->properties.metadata.art_url, 1024);
                 gui_fetch_coverart_from_url(gui_state.coverart_url);
             }
+
+	    struct timespec now;
+	    clock_gettime(CLOCK_MONOTONIC, &now);
+            if (last_playback_position == mplay->properties.position) {
+                int64_t secs_since_last_pos_change = timedelta_seconds(&now, &last_playback_pos_change);
+                if (secs_since_last_pos_change >= 60) {
+                    ioctl(fbfd, FBIOBLANK, FB_BLANK_POWERDOWN);
+                }
+                blanked = true;
+            } else {
+                if (blanked) {
+                    ioctl(fbfd, FBIOBLANK, FB_BLANK_UNBLANK);
+                }
+                blanked = false;
+                memcpy(&last_playback_pos_change, &now, sizeof(last_playback_pos_change));
+            }
+            last_playback_position = mplay->properties.position;
         }
         usleep(500000);
     }
-   
 }
 
 void gui_format_seconds_string(int input, char *buffer, size_t buffer_length)
@@ -196,9 +232,10 @@ void gui_fetch_coverart_from_url(const char *url)
 
     cover_decode(filename, cover_buffer_1, COVER_IMAGE_X, COVER_IMAGE_Y);
     cover_blur_background(filename, cover_background_buffer, COVER_BACKGROUND_X, COVER_BACKGROUND_Y);
-    
+
     unlink(filename);
 
     lv_img_set_src(gui_state.image_coverart, &cover_1);
     lv_img_set_src(gui_state.image_background, &cover_background);
 }
+
