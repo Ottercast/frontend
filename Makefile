@@ -40,11 +40,11 @@ all: default
 default: $(AOBJS) $(COBJS) $(MAINOBJ)
 	$(CC) -o $(BIN) $(MAINOBJ) $(AOBJS) $(COBJS) $(LDFLAGS) $(DEPFLAGS_LD)
 
-clean: 
+clean:
 	rm -f $(BIN) $(AOBJS) $(COBJS) $(MAINOBJ)
 	rm -f *.o
 
 install: ottercast-frontend
-	install -d $(DESTDIR)/opt/ottercast-frontend
-	install -m 755 ottercast-frontend $(DESTDIR)/opt/ottercast-frontend/
-	install -m 755 assets/cover.png $(DESTDIR)/opt/ottercast-frontend/
+	install -D -m 755 ottercast-frontend $(DESTDIR)/opt/ottercast-frontend/ottercast-frontend
+	install -D -m 644 assets/cover.png $(DESTDIR)/opt/ottercast-frontend/cover.png
+	install -D -m 644 assets/config $(DESTDIR)/etc/default/ottercast-frontend
