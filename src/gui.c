@@ -145,7 +145,7 @@ static int64_t timedelta_seconds(const struct timespec *a, const struct timespec
 	return delta_secs;
 }
 
-void gui_mpris_poll_task(void *arg)
+void *gui_mpris_poll_task(void *arg)
 {
     int fbfd = (int)arg;
     uint64_t last_playback_position = 0;
@@ -226,6 +226,8 @@ void gui_mpris_poll_task(void *arg)
         }
         usleep(500000);
     }
+
+    return NULL;
 }
 
 void gui_format_seconds_string(int input, char *buffer, size_t buffer_length)
