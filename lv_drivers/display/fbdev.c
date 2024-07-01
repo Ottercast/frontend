@@ -74,7 +74,7 @@ static struct fb_fix_screeninfo finfo;
 #endif /* USE_BSD_FBDEV */
 static char *fbp = 0;
 static long int screensize = 0;
-static int fbfd = 0;
+int fbfd = 0;
 
 /**********************
  *      MACROS
