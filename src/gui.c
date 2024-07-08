@@ -155,11 +155,11 @@ void *gui_mpris_poll_task(void *arg)
 
     while (1)
     {
-        mpris_poll_all();
+        int poll_success = mpris_poll_all();
 
         mpris_player *mplay = mpris_get_player_by_namespace("org.mpris.MediaPlayer2.spotifyd");
 
-        if (mplay == NULL)
+        if (!poll_success || mplay == NULL)
         {
             printf("player not found!\n");
 

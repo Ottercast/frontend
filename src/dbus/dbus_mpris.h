@@ -115,5 +115,5 @@ typedef struct mpris_player
 } mpris_player;
 
 DBusMessage *call_dbus_method(DBusConnection *conn, char *destination, char *path, char *interface, char *method);
-void load_mpris_property(DBusConnection *conn, const char *destination, const char *arg_identity, mpris_properties *properties);
+int load_mpris_property(DBusConnection *conn, const char *destination, const char *arg_identity, mpris_properties *properties);
 int load_players(DBusConnection *conn, mpris_player *players);

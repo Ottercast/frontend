@@ -39,9 +39,22 @@ int mpris_close()
 
 int mpris_poll(mpris_player *player)
 {
-    load_mpris_property(conn, player->namespace, MPRIS_PNAME_METADATA, &player->properties);
-    load_mpris_property(conn, player->namespace, MPRIS_PNAME_POSITION, &player->properties);
-    load_mpris_property(conn, player->namespace, MPRIS_PNAME_PLAYBACKSTATUS, &player->properties);
+    int err;
+
+    err = load_mpris_property(conn, player->namespace, MPRIS_PNAME_METADATA, &player->properties);
+    if (err) {
+        return 0;
+    }
+
+    err = load_mpris_property(conn, player->namespace, MPRIS_PNAME_POSITION, &player->properties);
+    if (err) {
+        return 0;
+    }
+
+    err = load_mpris_property(conn, player->namespace, MPRIS_PNAME_PLAYBACKSTATUS, &player->properties);
+    if (err) {
+        return 0;
+    }
 
     return 1;
 }
@@ -50,7 +63,9 @@ int mpris_poll_all()
 {
     for (int i = 0; i < players_count; i++)
     {
-        mpris_poll(&players[i]);
+        if (!mpris_poll(&players[i])) {
+            return 0;
+        }
     }
 
     return 1;

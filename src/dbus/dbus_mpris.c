@@ -5,6 +5,8 @@
 
 #include "dbus_mpris.h"
 
+#include <errno.h>
+
 void mpris_metadata_init(mpris_metadata* metadata)
 {
     metadata->track_number = 0;
@@ -322,23 +324,23 @@ _unref_message_err:
     dbus_message_unref(msg);
 }
 
-void load_mpris_property(DBusConnection *conn, const char *destination, const char *arg_identity, mpris_properties *properties)
+int load_mpris_property(DBusConnection *conn, const char *destination, const char *arg_identity, mpris_properties *properties)
 {
     if (NULL == conn)
     {
-        return;
+        return -ENOENT;
     }
     if (NULL == destination)
     {
-        return;
+        return -EINVAL;
     }
 
     DBusMessage *msg;
     DBusPendingCall *pending;
     DBusMessageIter params;
-    DBusError err;
+    DBusError dbus_err;
 
-    dbus_error_init(&err);
+    dbus_error_init(&dbus_err);
 
     char *interface = DBUS_PROPERTIES_INTERFACE;
     char *method = DBUS_METHOD_GET;
@@ -349,29 +351,34 @@ void load_mpris_property(DBusConnection *conn, const char *destination, const ch
     msg = dbus_message_new_method_call(destination, path, interface, method);
     if (NULL == msg)
     {
-        return;
+        return -ENOMEM;
     }
 
+    int err = 0;
     // append interface we want to get the property from
     dbus_message_iter_init_append(msg, &params);
     if (!dbus_message_iter_append_basic(&params, DBUS_TYPE_STRING, &arg_interface))
     {
+        err = -EIO;
         goto _unref_message_err;
     }
 
     dbus_message_iter_init_append(msg, &params);
     if (!dbus_message_iter_append_basic(&params, DBUS_TYPE_STRING, &arg_identity))
     {
+        err = -EIO;
         goto _unref_message_err;
     }
 
     // send message and get a handle for a reply
     if (!dbus_connection_send_with_reply(conn, msg, &pending, DBUS_CONNECTION_TIMEOUT))
     {
+        err = -EIO;
         goto _unref_message_err;
     }
     if (NULL == pending)
     {
+        err = -ENOMEM;
         goto _unref_message_err;
     }
     dbus_connection_flush(conn);
@@ -384,6 +391,7 @@ void load_mpris_property(DBusConnection *conn, const char *destination, const ch
     if (NULL == reply)
     {
         printf("empty reply error!\n");
+        err = -EIO;
         goto _unref_pending_err;
     }
     DBusMessageIter rootIter;
@@ -392,31 +400,31 @@ void load_mpris_property(DBusConnection *conn, const char *destination, const ch
 
     if (!strncmp(arg_identity, MPRIS_PNAME_CANCONTROL, strlen(MPRIS_PNAME_CANCONTROL)))
     {
-        properties->can_control = extract_boolean_var(&rootIter, &err);
+        properties->can_control = extract_boolean_var(&rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_CANGONEXT, strlen(MPRIS_PNAME_CANGONEXT)))
     {
-        properties->can_go_next = extract_boolean_var(&rootIter, &err);
+        properties->can_go_next = extract_boolean_var(&rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_CANGOPREVIOUS, strlen(MPRIS_PNAME_CANGOPREVIOUS)))
     {
-        properties->can_go_previous = extract_boolean_var(&rootIter, &err);
+        properties->can_go_previous = extract_boolean_var(&rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_CANPAUSE, strlen(MPRIS_PNAME_CANPAUSE)))
     {
-        properties->can_pause = extract_boolean_var(&rootIter, &err);
+        properties->can_pause = extract_boolean_var(&rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_CANPLAY, strlen(MPRIS_PNAME_CANPLAY)))
     {
-        properties->can_play = extract_boolean_var(&rootIter, &err);
+        properties->can_play = extract_boolean_var(&rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_CANSEEK, strlen(MPRIS_PNAME_CANSEEK)))
     {
-        properties->can_seek = extract_boolean_var(&rootIter, &err);
+        properties->can_seek = extract_boolean_var(&rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_LOOPSTATUS, strlen(MPRIS_PNAME_LOOPSTATUS)))
     {
-        extract_string_var(properties->loop_status, &rootIter, &err);
+        extract_string_var(properties->loop_status, &rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_METADATA, strlen(MPRIS_PNAME_METADATA)))
     {
@@ -424,24 +432,25 @@ void load_mpris_property(DBusConnection *conn, const char *destination, const ch
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_PLAYBACKSTATUS, strlen(MPRIS_PNAME_PLAYBACKSTATUS)))
     {
-        extract_string_var(properties->playback_status, &rootIter, &err);
+        extract_string_var(properties->playback_status, &rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_POSITION, strlen(MPRIS_PNAME_POSITION)))
     {
-        properties->position = extract_int64_var(&rootIter, &err);
+        properties->position = extract_int64_var(&rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_SHUFFLE, strlen(MPRIS_PNAME_SHUFFLE)))
     {
-        properties->shuffle = extract_boolean_var(&rootIter, &err);
+        properties->shuffle = extract_boolean_var(&rootIter, &dbus_err);
     }
     if (!strncmp(arg_identity, MPRIS_PNAME_VOLUME, strlen(MPRIS_PNAME_VOLUME)))
     {
-        properties->volume = extract_double_var(&rootIter, &err);
+        properties->volume = extract_double_var(&rootIter, &dbus_err);
     }
-    if (dbus_error_is_set(&err))
+    if (dbus_error_is_set(&dbus_err))
     {
-        fprintf(stderr, "error: %s arg: %s\n", err.message, arg_identity);
-        dbus_error_free(&err);
+        fprintf(stderr, "error: %s arg: %s\n", dbus_err.message, arg_identity);
+        err = -EIO;
+        dbus_error_free(&dbus_err);
     }
 
     dbus_message_unref(reply);
@@ -451,18 +460,13 @@ void load_mpris_property(DBusConnection *conn, const char *destination, const ch
     dbus_message_unref(msg);
 
     get_player_identity(properties->player_name, conn, destination);
-    return;
+    return err;
 
 _unref_pending_err:
-{
     dbus_pending_call_unref(pending);
-    goto _unref_message_err;
-}
 _unref_message_err:
-{
     dbus_message_unref(msg);
-}
-    return;
+    return err;
 }
 
 void load_mpris_properties(DBusConnection * conn, const char *destination, mpris_properties *properties)
